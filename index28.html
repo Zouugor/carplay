@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Aero Cockpit OS - C4 Grand Picasso</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#000000">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Audiowide&family=Cinzel:wght@600;800&family=Inter:wght@500;700;800&family=M+PLUS+Rounded+1c:wght@500;800&family=Orbitron:wght@600;800&family=Press+Start+2P&family=Rajdhani:wght@600;700&family=Share+Tech+Mono&family=Shippori+Mincho:wght@600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+:root{
+  --bg:#070B14; --card:rgba(14,20,34,0.05); --border:rgba(0,210,255,0.04);
+  --accent:#00D2FF; --text:#fff; --sub:#7B8C9E;
+  --font:'Inter',sans-serif; --glow:0 8px 32px rgba(0,210,255,0.01); --tile-r:22px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+input,select{user-select:text;-webkit-user-select:text;font-family:inherit}
+html,body{width:100%;height:100%;overflow:hidden;position:fixed;background-color:#070B14}
+body{font-family:var(--font);color:var(--text);touch-action:manipulation;
+  background-size:cover !important; background-position:center !important; background-repeat:no-repeat !important; background-attachment:fixed !important;
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+button{font-family:inherit;color:inherit;cursor:pointer;border:none;background:none}
+.glass{background:var(--card);border:1px solid var(--border);box-shadow:var(--glow);
+  -webkit-backdrop-filter:blur(4px) saturate(1.05);backdrop-filter:blur(4px) saturate(1.05);border-radius:24px}
+#root{width:100%;height:100%;display:flex;flex-direction:column;gap:12px;padding:12px;overflow:hidden}
+main{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;gap:12px}
+#top{display:flex;align-items:center;gap:12px;padding:10px 16px;border-radius:20px;flex-shrink:0}
+#top .car{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;font-size:14px;color:var(--accent)}
+.grow{flex:1}
+.bat{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--accent);font-weight:700}
+.chip{width:42px;height:42px;border-radius:14px;border:1px solid var(--border);background:rgba(255,255,255,.02);display:grid;place-items:center;font-size:17px;color:var(--accent);flex-shrink:0}
+.chip:active{transform:scale(.92)}
+.chip.on{background:var(--accent);color:#000}
+#content{flex:1;min-height:0;display:flex;gap:12px;overflow:hidden}
+#grid{flex:1;min-width:0;overflow-y:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));
+  grid-auto-rows:max-content;gap:22px 10px;padding:22px 16px;border-radius:24px;align-content:start}
+.app{display:flex;flex-direction:column;align-items:center;gap:8px;position:relative;cursor:pointer}
+.app .ico{width:74px;height:74px;border-radius:var(--tile-r);display:grid;place-items:center;font-size:32px;color:#fff;font-weight:800;
+  background:var(--c,#444);background-image:linear-gradient(160deg,rgba(255,255,255,.3),rgba(0,0,0,.2));box-shadow:0 8px 18px rgba(0,0,0,.45);transition:transform .15s}
+.app:active .ico{transform:scale(.9)}
+.app .nm{font-size:12px;font-weight:700;text-align:center;max-width:96px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 6px rgba(0,0,0,.7)}
+.badge{position:absolute;top:-8px;width:28px;height:28px;border-radius:50%;display:none;place-items:center;font-size:13px;z-index:2;box-shadow:0 2px 8px rgba(0,0,0,.5)}
+.badge.rm{right:calc(50% - 46px);background:#ff3b30;color:#fff}
+body.edit .badge{display:grid}
+body.edit .app{animation:wig 0.22s ease-in-out infinite alternate}
+@keyframes wig{0%{transform:rotate(-4deg) scale(1.02)}100%{transform:rotate(4deg) scale(1.02)}}
+#widgets{width:280px;flex-shrink:0;display:flex;flex-direction:column;gap:12px}
+.w{padding:18px;display:flex;flex-direction:column;justify-content:center}
+.w.clock{flex:1;align-items:center;text-align:center}
+#w-time{font-size:56px;font-weight:800;line-height:1;letter-spacing:.02em;color:var(--text)}
+#w-date{margin-top:8px;font-size:13px;color:var(--sub);text-transform:uppercase;letter-spacing:.12em}
+.w .lbl{font-size:11px;font-weight:800;letter-spacing:.2em;color:var(--accent);margin-bottom:6px}
+.weather-box{display:flex;align-items:center;gap:12px}
+#w-weather-icon{font-size:32px;color:var(--accent)}
+.weather-info .temp{font-size:24px;font-weight:800}
+.weather-info .desc{font-size:11px;color:var(--sub);text-transform:uppercase;letter-spacing:.1em}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;padding:16px;z-index:100}
+.modal.open{display:flex}
+.sheet{width:100%;max-width:720px;max-height:90vh;overflow-y:auto;padding:20px;background:rgba(7,11,20,0.85);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid var(--border);border-radius:24px}
+.sheet h3{font-size:14px;letter-spacing:.14em;color:var(--accent);display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;text-transform:uppercase}
+.sec{margin-bottom:18px}
+.sec>label{display:block;font-size:11px;letter-spacing:.16em;color:var(--sub);margin-bottom:6px;text-transform:uppercase;font-weight:700}
+.fld{width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--border);background:rgba(0,0,0,.2);color:var(--text);font-size:14px;outline:none;margin-bottom:8px}
+.row{display:flex;gap:8px;align-items:center}
+#theme-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+.tsw{height:76px;border-radius:14px;border:2px solid transparent;background-size:cover;background-position:center;position:relative;overflow:hidden;cursor:pointer}
+.tsw span{position:absolute;left:0;right:0;bottom:0;padding:6px;font-size:10px;font-weight:800;background:linear-gradient(transparent,rgba(0,0,0,.85));color:#fff;text-align:left}
+.tsw.sel{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+#preset-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:12px 6px;max-height:28vh;overflow-y:auto;padding:4px}
+.pre{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer}
+.pre .ico{width:50px;height:50px;border-radius:14px;display:grid;place-items:center;font-size:22px;color:#fff;background:var(--c);background-image:linear-gradient(160deg,rgba(255,255,255,.3),rgba(0,0,0,.2))}
+.pre .nm{font-size:10px;font-weight:700;text-align:center}
+.pre.have{opacity:.35}
+#dim{position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;z-index:200}
+@media (max-width:850px){#widgets{display:none}}
+</style>
+</head>
+<body>
+<div id="root">
+  <main>
+    <header id="top" class="glass">
+      <div class="car"><i class="fa-solid fa-car-side"></i><span id="car-name">C4 GRAND PICASSO</span></div>
+      <div class="grow"></div>
+      <div class="bat" id="bat" style="display:none"><i id="bat-ico" class="fa-solid fa-battery-full"></i><span id="bat-lvl">--%</span></div>
+      <button class="chip" id="edit-btn" onclick="toggleEdit()" aria-label="Modifier les apps"><i class="fa-solid fa-pen"></i></button>
+      <button class="chip" id="fs-btn" onclick="toggleFs()" aria-label="Plein écran"><i class="fa-solid fa-expand"></i></button>
+      <button class="chip" onclick="openSettings()" aria-label="Réglages"><i class="fa-solid fa-gear"></i></button>
+    </header>
+
+    <section id="content">
+      <div id="grid" class="glass"></div>
+      <aside id="widgets">
+        <div class="glass w clock"><div id="w-time">--:--</div><div id="w-date">----</div></div>
+        <div class="glass w">
+          <div class="lbl"><i class="fa-solid fa-cloud-sun"></i> MÉTÉO</div>
+          <div class="weather-box">
+            <div class="weather-icon"><i id="w-weather-icon" class="fa-solid fa-spinner fa-spin"></i></div>
+            <div class="weather-info">
+              <div class="temp" id="w-temp">--°C</div>
+              <div class="desc" id="w-desc">Chargement…</div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </section>
+  </main>
+</div>
+
+<div id="dim"></div>
+
+<!-- RÉGLAGES & GESTION DES APPS -->
+<div class="modal" id="set-modal" onclick="if(event.target===this)closeModals()">
+  <div class="sheet">
+    <h3>Réglages & Applications <button class="chip" onclick="closeModals()"><i class="fa-solid fa-xmark"></i></button></h3>
+    
+    <div class="sec"><label>Thème visuel</label><div id="theme-grid"></div></div>
+
+    <div class="sec">
+      <label>Fond d'écran personnalisé (pour ce thème)</label>
+      <input type="file" id="custom-bg-file" accept="image/*" class="fld" onchange="loadCustomBg(event)">
+      <button class="chip" style="width:100%;border-radius:12px;font-weight:700;height:42px;color:#ff3b30;margin-top:4px" onclick="clearCustomBg()">Retirer le fond de ce thème</button>
+    </div>
+
+    <div class="sec">
+      <label>Ajouter une application</label>
+      <input id="preset-search" class="fld" type="search" placeholder="Rechercher : Spotify, Waze, Netflix…" oninput="renderPresets()">
+      <div id="preset-list"></div>
+    </div>
+
+    <div class="sec">
+      <label>Ajouter via un lien personnalisé (URL Scheme)</label>
+      <input id="c-name" class="fld" type="text" placeholder="Nom de l'application">
+      <input id="c-url" class="fld" type="text" autocapitalize="off" autocorrect="off" placeholder="Lien (ex. monapp://)">
+      <div class="row">
+        <select id="c-icon" class="fld" style="flex:1"></select>
+        <input id="c-color" type="color" value="#3b82f6" style="width:56px;height:42px;border:none;background:none;margin-bottom:8px">
+      </div>
+      <button class="chip" style="width:100%;border-radius:12px;background:var(--accent);color:#000;font-weight:700;height:42px" onclick="addCustom()">AJOUTER L'APPLICATION</button>
+    </div>
+
+    <div class="sec">
+      <label>Nom du véhicule</label>
+      <input id="car-input" class="fld" type="text" maxlength="28" oninput="setCar(this.value)">
+    </div>
+    <div class="sec">
+      <label>Luminosité de nuit (assombrit l'écran)</label>
+      <input id="dim-range" type="range" min="0" max="70" value="0" style="width:100%;accent-color:var(--accent)" oninput="setDim(this.value)">
+    </div>
+    <div class="sec">
+      <label>Écran toujours allumé</label>
+      <button class="chip" id="wake-btn" style="width:100%;border-radius:12px;font-weight:700;height:42px" onclick="toggleWake()">DÉSACTIVÉ</button>
+    </div>
+    <div class="sec">
+      <button class="chip" style="width:100%;border-radius:12px;font-weight:700;height:42px;color:#ff3b30" onclick="resetApps()">Rétablir les applications par défaut</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   OUTILS DE FONDS
+========================================================= */
+const rng=(s)=>()=>{s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+const svg=(inner,defs='')=>`url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice"><defs>${defs}</defs>${inner}</svg>`)}")`;
+const lg=(id,stops)=>`<linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1">${stops.map(([o,c])=>`<stop offset="${o}" stop-color="${c}"/>`).join('')}</linearGradient>`;
+const rg=(id,stops)=>`<radialGradient id="${id}">${stops.map(([o,c,a])=>`<stop offset="${o}" stop-color="${c}" stop-opacity="${a??1}"/>`).join('')}</radialGradient>`;
+const blur=(id,sd)=>`<filter id="${id}" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="${sd}"/></filter>`;
+const rect=(fill,y=0,h=900)=>`<rect y="${y}" width="1600" height="${h}" fill="${fill}"/>`;
+const stars=(n,seed,col='#fff',maxy=900)=>{const r=rng(seed);let o='';for(let i=0;i<n;i++)o+=`<circle cx="${r()*1600|0}" cy="${r()*maxy|0}" r="${(r()*1.6+.3).toFixed(1)}" fill="${col}" opacity="${(r()*.7+.2).toFixed(2)}"/>`;return o};
+const wave=(y,amp,len,fill,op=1,ph=0)=>{let d=`M0 ${y}`;for(let x=0;x<=1600;x+=40)d+=` L${x} ${(y+Math.sin(x/len+ph)*amp).toFixed(1)}`;return `<path d="${d} L1600 900 L0 900Z" fill="${fill}" opacity="${op}"/>`};
+const skyline=(seed,base,minh,maxh,fill,win)=>{const r=rng(seed);let o='',x=-20;while(x<1620){const w=40+r()*80|0,h=minh+r()*(maxh-minh)|0;o+=`<rect x="${x}" y="${base-h}" width="${w}" height="${h}" fill="${fill}"/>`;if(win)for(let k=0;k<h/26;k++)for(let j=0;j<w/22;j++)if(r()>.74)o+=`<rect x="${x+6+j*20}" y="${base-h+8+k*24}" width="8" height="10" fill="${Array.isArray(win)?win[r()*win.length|0]:win}" opacity="${(r()*.6+.3).toFixed(2)}"/>`;x+=w+(r()*6|0)}return o};
+const trees=(seed,base,minh,maxh,fill)=>{const r=rng(seed);let o='';for(let x=-30;x<1650;x+=34+r()*30){const h=minh+r()*(maxh-minh),w=h*.38;o+=`<path d="M${x} ${base} L${x+w/2} ${base-h} L${x+w} ${base}Z" fill="${fill}"/>`}return o};
+const blob=(cx,cy,rad,ph)=>{let d='';for(let i=0;i<=90;i++){const a=i/90*Math.PI*2,k=rad*(1+.16*Math.sin(a*3+ph)+.09*Math.sin(a*5+ph*2)+.05*Math.sin(a*8+ph*3));d+=(i?'L':'M')+(cx+Math.cos(a)*k*1.5).toFixed(1)+' '+(cy+Math.sin(a)*k*.8).toFixed(1)}return d+'Z'};
+
+/* =========================================================
+   THÈMES (Image Godzilla intégrée par défaut)[cite: 3]
+========================================================= */
+const defaultGodzillaImg = "url([cite: 3]data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=)";
+
+const SCENES={
+ godzilla:()=>defaultGodzillaImg,
+ cyberpunk:()=>svg(rect('url(#g)')+stars(60,7,'#00f0ff',400)+skyline(11,760,120,420,'#0a0c1c',['#fcee09','#00f0ff','#ff2a8a'])+skyline(12,900,80,300,'#04050c',['#fcee09','#00f0ff'])+`<rect y="752" width="1600" height="3" fill="#00f0ff" opacity=".8"/>`,lg('g',[[0,'#05050f'],[.6,'#1a0f3a'],[1,'#3a0f4a']])),
+ phantom:()=>svg(rect('url(#g)')+`<circle cx="1180" cy="330" r="260" fill="url(#r)"/>`+skyline(21,780,100,380,'#120206','#ff003c')+skyline(22,900,70,260,'#050102','#fcee09'),lg('g',[[0,'#0a0305'],[1,'#3a0614']])+rg('r',[[0,'#ff003c',.55],[1,'#ff003c',0]])),
+ topo:()=>{let p='';for(let i=0;i<26;i++)p+=`<path d="${blob(560,430,40+i*30,1)}" fill="none" stroke="#fff" stroke-width="${i%5==0?2.4:1.1}" opacity="${i%5==0?.5:.22}"/>`;for(let i=0;i<14;i++)p+=`<path d="${blob(1250,300,30+i*24,3)}" fill="none" stroke="#fff" stroke-width="${i%5==0?2.2:1}" opacity="${i%5==0?.45:.2}"/>`;return svg(rect('#050505')+p)},
+ sakura:()=>{const r=rng(5);let p='';for(let i=0;i<90;i++){const x=r()*1600|0,y=r()*900|0,s=(r()*10+7).toFixed(1);p+=`<ellipse cx="${x}" cy="${y}" rx="${s}" ry="${(s*.55).toFixed(1)}" fill="${r()>.5?'#fff0f6':'#ffc2da'}" opacity="${(r()*.5+.45).toFixed(2)}" transform="rotate(${r()*180|0} ${x} ${y})"/>`}return svg(rect('url(#g)')+`<circle cx="1250" cy="220" r="130" fill="#fff" opacity=".35"/>`+wave(760,26,170,'#f6a5c6',.55,1)+wave(820,20,120,'#e585ae',.7,3)+p,lg('g',[[0,'#ffe3ef'],[.55,'#ffb3d1'],[1,'#d98bd6']]))},
+ tokyo:()=>{const r=rng(9);let rain='';for(let i=0;i<140;i++){const x=r()*1600|0,y=r()*900|0;rain+=`<line x1="${x}" y1="${y}" x2="${x-12}" y2="${y+46}" stroke="#9ad7ff" stroke-width="1.2" opacity=".22"/>`}return svg(rect('url(#g)')+skyline(31,780,140,460,'#0c1038',['#ffd36b','#ff7ac8'])+skyline(32,900,100,340,'#05061c',['#6ff0ff','#ffd36b'])+`<g filter="url(#b)"><rect x="300" y="500" width="120" height="14" fill="#ff2a8a"/><rect x="1100" y="420" width="14" height="150" fill="#00f0ff"/></g>`+rain,lg('g',[[0,'#050a24'],[1,'#2a1050']])+blur('b',6))},
+ ghibli:()=>{const r=rng(2);let c='';for(let i=0;i<7;i++){const x=r()*1500|0,y=60+r()*300|0;for(let k=0;k<5;k++)c+=`<circle cx="${x+k*42}" cy="${y+(k%2)*-18}" r="${40+r()*28|0}" fill="#fff" opacity=".93"/>`}return svg(rect('url(#g)')+c+wave(690,40,210,'#6bc267',1,0)+wave(780,34,150,'#46a257',1,2)+wave(850,22,110,'#2f8447',1,4),lg('g',[[0,'#4aa8f0'],[1,'#d4efff']]))},
+ matrix:()=>{const r=rng(4),ch='01アイウエオカキクケコサシスセソ';let t='';for(let i=0;i<48;i++){const x=i*34+8,n=6+r()*10|0,y0=r()*500|0;for(let k=0;k<n;k++)t+=`<text x="${x}" y="${y0+k*22}" font-family="monospace" font-size="19" fill="${k==n-1?'#d6ffe4':'#00ff66'}" opacity="${(.12+k/n*.7).toFixed(2)}">${ch[r()*ch.length|0]}</text>`}return svg(rect('#010a04')+t)},
+ ember:()=>{const r=rng(6);let sp='';for(let i=0;i<90;i++)sp+=`<circle cx="${r()*1600|0}" cy="${300+r()*600|0}" r="${(r()*3+1).toFixed(1)}" fill="#ff8a1f" opacity="${(r()*.8+.2).toFixed(2)}"/>`;return svg(rect('url(#g)')+`<g filter="url(#b)">${sp}</g>`+sp+wave(720,70,230,'#150300',1,1)+wave(800,50,160,'#080100',1,3),lg('g',[[0,'#0a0000'],[.6,'#3a0a00'],[1,'#a02a00']])+blur('b',4))},
+ forest:()=>{const r=rng(3);let f='';for(let i=0;i<40;i++)f+=`<circle cx="${r()*1600|0}" cy="${300+r()*500|0}" r="${(r()*3+1.5).toFixed(1)}" fill="#e8ff7a"/>`;return svg(rect('url(#g)')+`<circle cx="1180" cy="190" r="100" fill="#f3ffd8" opacity=".85"/>`+trees(41,760,160,380,'#164a2b')+trees(42,860,160,420,'#0a2a18')+trees(43,930,200,460,'#04150c')+`<g filter="url(#b)">${f}</g>`+f,lg('g',[[0,'#0d2b3a'],[.6,'#1f5a3a'],[1,'#2f7a46']])+blur('b',5))},
+ ocean:()=>svg(rect('url(#g)')+`<polygon points="500,0 640,0 380,900 120,900" fill="#9fe6ff" opacity=".08"/><polygon points="1000,0 1120,0 1000,900 760,900" fill="#9fe6ff" opacity=".07"/>`+wave(420,30,150,'#0b6aa8',.5,0)+wave(540,36,190,'#07548a',.6,2)+wave(660,32,130,'#043e6c',.75,4)+wave(780,26,100,'#022a4d',.9,1),lg('g',[[0,'#0a8fd0'],[1,'#001a33']])),
+ desert:()=>svg(rect('url(#g)')+`<circle cx="800" cy="560" r="200" fill="url(#s)"/>`+wave(650,34,260,'#7a2a3a',1,0)+wave(730,40,200,'#4a1530',1,2)+wave(820,30,160,'#220a22',1,4),lg('g',[[0,'#2b0a3d'],[.55,'#ff6a3d'],[1,'#ffd27a']])+lg('s',[[0,'#fff3b0'],[1,'#ffb347']])),
+ ukiyo:()=>{const arc=(x,y)=>[36,28,20,12,4].map(r=>`<circle cx="${x}" cy="${y}" r="${r}"/>`).join('');return svg(rect('#f1e6c9')+`<rect width="1600" height="900" fill="url(#p)"/>`,`<pattern id="p" width="80" height="40" patternUnits="userSpaceOnUse"><g fill="#f1e6c9" stroke="#2a5d8f" stroke-width="2.2" opacity=".6">${arc(0,0)}${arc(80,0)}${arc(0,40)}${arc(80,40)}${arc(40,20)}</g></pattern>`)},
+ witcher:()=>svg(rect('url(#g)')+stars(100,4,'#e0e0e0',600)+`<path d="M0 700 Q500 500 1600 750 L1600 900 L0 900Z" fill="#0f1418"/>`,lg('g',[[0,'#08090c'],[1,'#222a35']])),
+ minecraft:()=>svg(rect('#181818')+`<rect x="100" y="200" width="120" height="120" fill="#3c8527"/><rect x="800" y="400" width="200" height="200" fill="#595959"/><rect x="1300" y="100" width="100" height="100" fill="#8f6e4d"/>`),
+ bleach:()=>svg(rect('url(#g)')+`<circle cx="800" cy="450" r="300" fill="#fff" opacity=".12"/>`,lg('g',[[0,'#0d0d0f'],[1,'#2c1b30']])),
+ onepiece:()=>svg(rect('url(#g)')+wave(600,50,200,'#0d2b45',.8,0)+wave(720,40,160,'#1b4965',.9,2),lg('g',[[0,'#1d3557'],[.6,'#457b9d'],[1,'#e63946']])),
+ akira:()=>svg(rect('url(#g)')+skyline(44,800,180,450,'#110204',['#ff1e00','#ffaa00'])+`<rect y="785" width="1600" height="15" fill="#ff1e00" opacity=".6"/>`,lg('g',[[0,'#1a0205'],[1,'#4a0d14']])),
+ initiald:()=>svg(rect('url(#g)')+skyline(55,820,120,380,'#07080a',['#ffffff','#ffcc00'])+`<line x1="0" y1="815" x2="1600" y2="815" stroke="#ffffff" stroke-width="4" stroke-dasharray="30 20"/>`,lg('g',[[0,'#0b0c10'],[1,'#1f2833']])),
+ starwars:()=>svg(rect('#020408')+stars(220,15,'#ffffff',900)+`<circle cx="1200" cy="250" r="80" fill="#cccccc" opacity=".4"/>`),
+ bladerunner:()=>svg(rect('url(#g)')+skyline(66,780,200,500,'#180802',['#ff4500','#ff8c00'])+`<circle cx="400" cy="300" r="140" fill="#ffcc00" opacity=".25" filter="url(#b)"/>`,lg('g',[[0,'#0d0502'],[1,'#3b1805']])+blur('b',15)),
+ residentevil:()=>svg(rect('url(#g)')+`<circle cx="800" cy="450" r="350" fill="url(#r)" opacity=".6"/>`,lg('g',[[0,'#080202'],[1,'#290808']]) + rg('r',[[0,'#8a0303',.8],[1,'#8a0303',0]])),
+ dragonballz:()=>svg(rect('url(#g)')+`<circle cx="800" cy="450" r="280" fill="#ff7700" opacity=".3" filter="url(#b)"/>`,lg('g',[[0,'#041026'],[1,'#12376f']]) + blur('b',30)),
+ naruto:()=>svg(rect('url(#g)')+wave(700,40,180,'#d97706',.8,1)+wave(800,30,140,'#b45309',.9,3),lg('g',[[0,'#1e1b4b'],[1,'#312e81']])),
+ cyberpunkedge:()=>svg(rect('url(#g)')+skyline(77,760,150,400,'#0f051d',['#ec4899','#06b6d4'])+`<rect y="752" width="1600" height="3" fill="#ec4899"/>`,lg('g',[[0,'#05010a'],[1,'#2e1065']]))
+};
+
+const D={font:"'Inter',sans-serif",text:'#fff',sub:'rgba(255,255,255,.62)',glow:'0 8px 30px rgba(0,0,0,.35)',tile:'22px'};
+const THEMES=[
+ {id:'godzilla',name:'Godzilla (Kaiju)',font:"'Orbitron',sans-serif",accent:'#00ff66',border:'#00ff66',card:'rgba(5,24,14,.08)',glow:'0 0 15px rgba(0,255,102,.08)',tile:'10px'},
+ {id:'cyberpunk',name:'Night City',font:"'Orbitron',sans-serif",accent:'#fcee09',border:'#00f0ff',card:'rgba(8,10,24,.06)',text:'#00f0ff',glow:'0 0 18px rgba(0,240,255,.05)',tile:'6px'},
+ {id:'phantom',name:'Dogtown',font:"'Rajdhani',sans-serif",accent:'#fcee09',border:'#ff003c',card:'rgba(14,4,8,.08)',text:'#ff2a52',glow:'0 0 18px rgba(255,0,60,.05)',tile:'8px'},
+ {id:'topo',name:'Topographique N&B',font:"'Share Tech Mono',monospace",accent:'#ffffff',border:'#4a4a4a',card:'rgba(8,8,8,.1)',glow:'0 0 10px rgba(255,255,255,.01)',tile:'10px'},
+ {id:'sakura',name:'Sakura (anime)',font:"'M PLUS Rounded 1c',sans-serif",accent:'#ff5d9e',border:'rgba(255,255,255,.15)',card:'rgba(255,255,255,.05)',text:'#4a1034',sub:'rgba(74,16,52,.7)',glow:'0 8px 26px rgba(160,40,110,.02)',tile:'30px'},
+ {id:'tokyo',name:'Tokyo sous la pluie',font:"'M PLUS Rounded 1c',sans-serif",accent:'#ff7ac8',border:'rgba(111,240,255,.1)',card:'rgba(6,8,32,.06)',glow:'0 0 18px rgba(111,240,255,.02)',tile:'24px'},
+ {id:'ghibli',name:'Ciel d\'été (Ghibli)',font:"'M PLUS Rounded 1c',sans-serif",accent:'#ffe26a',border:'rgba(255,255,255,.15)',card:'rgba(20,70,120,.05)',glow:'0 8px 24px rgba(0,60,120,.02)',tile:'32px'},
+ {id:'matrix',name:'Matrix',font:"'Share Tech Mono',monospace",accent:'#00ff66',border:'#00a843',card:'rgba(0,12,4,.1)',text:'#7dffa8',sub:'rgba(125,255,168,.6)',glow:'0 0 14px rgba(0,255,102,.02)',tile:'4px'},
+ {id:'ember',name:'Braise (Dark Fantasy)',font:"'Cinzel',serif",accent:'#ff9a3c',border:'rgba(255,138,31,.1)',card:'rgba(14,3,0,.08)',text:'#ffe6cf',glow:'0 0 18px rgba(255,100,0,.02)',tile:'12px'},
+ {id:'forest',name:'Forêt enchantée',font:"'Cinzel',serif",accent:'#e8ff7a',border:'rgba(232,255,122,.1)',card:'rgba(4,22,12,.06)',glow:'0 0 18px rgba(200,255,80,.02)',tile:'16px'},
+ {id:'ocean',name:'Abysses',accent:'#5fe0ff',border:'rgba(95,224,255,.1)',card:'rgba(0,26,51,.05)',glow:'0 0 20px rgba(0,160,255,.02)',tile:'26px'},
+ {id:'desert',name:'Désert crépuscule',font:"'Audiowide',sans-serif",accent:'#ffd27a',border:'rgba(255,210,122,.1)',card:'rgba(43,10,40,.06)',glow:'0 0 18px rgba(255,120,60,.02)',tile:'18px'},
+ {id:'ukiyo',name:'Ukiyo-e (Japonais)',font:"'Shippori Mincho',serif",accent:'#1f4e7a',border:'rgba(42,93,143,.1)',card:'rgba(250,243,224,.12)',text:'#14304d',sub:'rgba(20,48,77,.7)',glow:'0 6px 20px rgba(20,48,77,.02)',tile:'14px'},
+ {id:'witcher',name:'The Witcher',font:"'Cinzel',serif",accent:'#e0e0e0',border:'#8c7853',card:'rgba(15,20,24,.1)',text:'#e5e7eb',glow:'0 0 15px rgba(140,120,83,.08)',tile:'14px'},
+ {id:'minecraft',name:'Minecraft',font:"'Press Start 2P',monospace",accent:'#55ff55',border:'#3c8527',card:'rgba(24,24,24,.12)',tile:'0px'},
+ {id:'bleach',name:'Bleach (Soul Reaper)',font:"'Shippori Mincho',serif",accent:'#ffffff',border:'#ffffff',card:'rgba(13,13,15,.1)',tile:'12px'},
+ {id:'onepiece',name:'One Piece',font:"'Audiowide',sans-serif",accent:'#e63946',border:'#457b9d',card:'rgba(29,53,87,.1)',glow:'0 0 15px rgba(230,57,70,.08)',tile:'20px'},
+ {id:'akira',name:'Akira',font:"'Orbitron',sans-serif",accent:'#ff1e00',border:'#ff1e00',card:'rgba(26,2,5,.1)',glow:'0 0 20px rgba(255,30,0,.1)',tile:'8px'},
+ {id:'initiald',name:'Initial D',font:"'Rajdhani',sans-serif",accent:'#ffcc00',border:'#ffffff',card:'rgba(11,12,16,.1)',glow:'0 0 15px rgba(255,204,0,.08)',tile:'12px'},
+ {id:'starwars',name:'Star Wars',font:"'Orbitron',sans-serif",accent:'#38bdf8',border:'#38bdf8',card:'rgba(2,4,8,.1)',glow:'0 0 18px rgba(56,189,248,.08)',tile:'16px'},
+ {id:'bladerunner',name:'Blade Runner',font:"'Orbitron',sans-serif",accent:'#ff8c00',border:'#ff4500',card:'rgba(13,5,2,.1)',glow:'0 0 18px rgba(255,69,0,.08)',tile:'10px'},
+ {id:'residentevil',name:'Resident Evil',font:"'Cinzel',serif",accent:'#ef4444',border:'#b91c1c',card:'rgba(8,2,2,.1)',glow:'0 0 18px rgba(239,68,68,.08)',tile:'12px'},
+ {id:'dragonballz',name:'Dragon Ball Z',font:"'Audiowide',sans-serif",accent:'#fb923c',border:'#f97316',card:'rgba(4,16,38,.1)',tile:'18px'},
+ {id:'naruto',name:'Naruto',font:"'M PLUS Rounded 1c',sans-serif",accent:'#f59e0b',border:'#d97706',card:'rgba(30,27,75,.1)',tile:'22px'},
+ {id:'cyberpunkedge',name:'Cyberpunk Edgerunners',font:"'Orbitron',sans-serif",accent:'#ec4899',border:'#06b6d4',card:'rgba(5,1,10,.1)',glow:'0 0 20px rgba(236,72,153,.1)',tile:'8px'}
+].map(t=>({...D,...t}));
+</script>
+<script>
+const $=(id)=>document.getElementById(id);
+const lsGet=(k)=>{try{return localStorage.getItem(k)}catch(e){return null}};
+const lsSet=(k,v)=>{try{localStorage.setItem(k,v); return true;}catch(e){return false;}};
+
+/* =========================================================
+   CATALOGUE D'APPS & SCHEMES UNIFIÉS
+========================================================= */
+const B='fa-brands fa-',S='fa-solid fa-';
+const PRESETS=[
+ ['Spotify','spotify://',B+'spotify','#1db954'],['YouTube','youtube://',B+'youtube','#ff0000'],
+ ['YouTube Music','youtubemusic://',S+'circle-play','#e11d2e'],['Deezer','deezer://',S+'headphones','#a238ff'],
+ ['Apple Musique','music://',S+'music','#fa2d48'],['Podcasts','podcasts://',S+'podcast','#9333ea'],
+ ['Amazon Music','amznmp3://',B+'amazon','#1a98ff'],['SoundCloud','soundcloud://',B+'soundcloud','#ff5500'],
+ ['Shazam','shazam://',S+'wave-square','#0a84ff'],['Twitch','twitch://',B+'twitch','#9146ff'],
+ ['Netflix','nflx://',S+'film','#e50914'],['Disney+','disneyplus://',S+'wand-magic-sparkles','#113ccf'],
+ ['Prime Video','aiv://',B+'amazon','#00a8e1'],['Canal+','mycanal://',S+'tv','#111111'],
+ ['Waze','waze://',S+'location-dot','#33ccff'],['Google Maps','https://maps.google.com',S+'map','#34a853'],
+ ['Plans','maps://',S+'map-location-dot','#30b0c7'],['Uber','uber://',B+'uber','#111111'],
+ ['WhatsApp','whatsapp://',B+'whatsapp','#25d366'],['Messages','sms://',S+'comment-dots','#34c759'],
+ ['Téléphone','tel://',S+'phone','#34c759'],['Contacts','contacts://',S+'address-book','#8e8e93'],
+ ['Telegram','tg://',B+'telegram','#2aabee'],['Messenger','fb-messenger://',B+'facebook-messenger','#0084ff'],
+ ['Instagram','instagram://',B+'instagram','#e1306c'],['TikTok','snssdk1233://',B+'tiktok','#111111'],
+ ['Snapchat','snapchat://',S+'snapchat','#fffc00'],['Facebook','fb://',B+'facebook','#1877f2'],
+ ['X','twitter://',B+'x-twitter','#111111'],['Discord','discord://',B+'discord','#5865f2'],
+ ['Mail','mailto:',S+'envelope','#0a84ff'],['Calendrier','calshow://',S+'calendar-days','#ff3b30'],
+ ['Notes','mobilenotes://',S+'note-sticky','#ffcc00'],['Photos','photos-redirect://',S+'images','#ff9f0a'],
+ ['Fichiers','shareddocuments://',S+'folder-open','#0a84ff'],['Raccourcis','shortcuts://',S+'bolt','#8e44ef'],
+ ['Chrome','googlechrome://',B+'chrome','#4285f4'],['Safari','https://www.google.com',S+'compass','#0a84ff'],
+ ['App Store','itms-apps://',B+'app-store-ios','#0a84ff'],['Réglages','App-Prefs://',S+'gear','#8e8e93']
+];
+const ICONS=[['Lettre (automatique)',''],['Musique',S+'music'],['Casque',S+'headphones'],['Vidéo',S+'play'],['Téléphone',S+'phone'],
+ ['Message',S+'comment'],['Carte',S+'map'],['Appareil photo',S+'camera'],['Manette',S+'gamepad'],['Panier',S+'cart-shopping'],
+ ['Voiture',S+'car'],['Carburant',S+'gas-pump'],['Globe',S+'globe'],['Étoile',S+'star'],['Cœur',S+'heart']];
+
+const DEFAULTS=['Spotify','YouTube','Deezer','Netflix','WhatsApp','Messages','Contacts','Photos','Réglages'];
+const defaultApps=()=>DEFAULTS.map((n)=>{const p=PRESETS.find(x=>x[0]===n);return{name:p[0],url:p[1],icon:p[2],color:p[3]}});
+function getApps(){try{const s=lsGet('cp_apps');const a=s&&JSON.parse(s);if(Array.isArray(a))return a}catch(e){}return defaultApps()}
+function saveApps(a){lsSet('cp_apps',JSON.stringify(a));renderApps()}
+
+/* =========================================================
+   AFFICHAGE DES APPS
+========================================================= */
+const esc=(s)=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const icoHtml=(a)=>a.icon?`<i class="${esc(a.icon)}"></i>`:esc((a.name||'?').trim().charAt(0).toUpperCase());
+const darkText=(c)=>{const m=/^#?([\da-f]{6})$/i.exec(c||'');if(!m)return false;const n=parseInt(m[1],16),l=(.299*(n>>16)+.587*(n>>8&255)+.114*(n&255));return l>170};
+
+function launch(i){
+  if(document.body.classList.contains('edit'))return;
+  const a=getApps()[i];if(a)location.href=a.url;
+}
+function renderApps(){
+  const apps=getApps();
+  $('grid').innerHTML=apps.map((a,i)=>`
+    <div class="app" onclick="launch(${i})">
+      <button class="badge rm" onclick="event.stopPropagation();removeApp(${i})" aria-label="Supprimer"><i class="fa-solid fa-xmark"></i></button>
+      <div class="ico" style="--c:${esc(a.color||'#444')};${darkText(a.color)?'color:#111':''}">${icoHtml(a)}</div>
+      <div class="nm">${esc(a.name)}</div>
+    </div>`).join('')||'<p style="grid-column:1/-1;text-align:center;color:var(--sub)">Aucune application.</p>';
+}
+function removeApp(i){const a=getApps();a.splice(i,1);saveApps(a);renderPresets()}
+function resetApps(){if(confirm('Rétablir les applications par défaut ?')){saveApps(defaultApps());renderPresets();closeModals()}}
+function toggleEdit(){const on=document.body.classList.toggle('edit');$('edit-btn').classList.toggle('on',on)}
+
+/* ---- Paramètres et Ajout ---- */
+function openSettings(){
+  $('set-modal').classList.add('open');
+  if(!$('theme-grid').children.length)renderThemeGrid();
+  else applyTheme(lsGet('cp_theme')||'godzilla');
+  $('car-input').value=lsGet('cp_car')||'C4 GRAND PICASSO';
+  $('preset-search').value='';
+  renderPresets();
+}
+function renderPresets(){
+  const q=($('preset-search').value||'').toLowerCase().trim(),have=new Set(getApps().map(a=>a.name));
+  $('preset-list').innerHTML=PRESETS.map((p,i)=>({p,i})).filter(({p})=>!q||p[0].toLowerCase().includes(q)).map(({p,i})=>
+    `<div class="pre ${have.has(p[0])?'have':''}" onclick="addPreset(${i})"><div class="ico" style="--c:${p[3]};${darkText(p[3])?'color:#111':''}"><i class="${p[2]}"></i></div><div class="nm">${esc(p[0])}</div></div>`).join('');
+}
+function addPreset(i){
+  const p=PRESETS[i],a=getApps();
+  if(a.some(x=>x.name===p[0]))return;
+  a.push({name:p[0],url:p[1],icon:p[2],color:p[3]});
+  saveApps(a);renderPresets();
+}
+function addCustom(){
+  const name=$('c-name').value.trim(),url=$('c-url').value.trim();
+  if(!name||!url){alert("Renseignez le nom et le lien.");return}
+  const a=getApps();
+  a.push({name,url,icon:$('c-icon').value,color:$('c-color').value});
+  saveApps(a);$('c-name').value='';$('c-url').value='';renderPresets();
+}
+function closeModals(){document.querySelectorAll('.modal').forEach(m=>m.classList.remove('open'))}
+
+/* =========================================================
+   FOND D'ÉCRAN PERSO AVEC COMPRESSION AUTOMATIQUE (Anti-Plantage iPad)
+========================================================= */
+function loadCustomBg(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  
+  const reader = new FileReader();
+  reader.onload = function(e){
+    const img = new Image();
+    img.onload = function(){
+      // Redimensionnement intelligent pour éviter de saturer le localStorage de l'iPad/Safari
+      const canvas = document.createElement('canvas');
+      let width = img.width;
+      let height = img.height;
+      const maxDim = 1920;
+      
+      if (width > height && width > maxDim) {
+        height *= maxDim / width;
+        width = maxDim;
+      } else if (height > maxDim) {
+        width *= maxDim / height;
+        height = maxDim;
+      }
+      
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+      
+      // Conversion compressée en JPEG
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+      const currentTheme = lsGet('cp_theme') || 'godzilla';
+      
+      const success = lsSet('cp_bg_' + currentTheme, dataUrl);
+      if(!success) {
+        alert("Attention : L'image est trop lourde pour la mémoire de l'appareil. Essayez une image un peu plus légère.");
+      }
+      applyTheme(currentTheme);
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearCustomBg(){
+  const currentTheme = lsGet('cp_theme') || 'godzilla';
+  localStorage.removeItem('cp_bg_' + currentTheme);
+  $('custom-bg-file').value = '';
+  applyTheme(currentTheme);
+  renderThemeGrid();
+}
+
+/* =========================================================
+   THÈMES (Avec sécurité anti-fond blanc)
+========================================================= */
+const lightIds=['sakura','ukiyo'];
+const lightStyle=document.createElement('style');lightStyle.textContent='html.light .app .nm{text-shadow:none}html.light .chip.on{color:#fff}';document.head.appendChild(lightStyle);
+
+function applyTheme(id){
+  const t=THEMES.find(x=>x.id===id)||THEMES[0],r=document.documentElement.style;
+  r.setProperty('--font',t.font);r.setProperty('--text',t.text);r.setProperty('--sub',t.sub);r.setProperty('--accent',t.accent);
+  r.setProperty('--border',t.border);r.setProperty('--card',t.card);r.setProperty('--glow',t.glow);r.setProperty('--tile-r',t.tile);
+  
+  lsSet('cp_theme',t.id);
+
+  const customBg = lsGet('cp_bg_' + t.id);
+  let bg = '';
+  
+  if(customBg){
+    bg = `url("${customBg}")`;
+  } else {
+    try {
+      bg = SCENES[t.id]();
+    } catch(e) {
+      bg = '#070B14'; // Fallback sécurisé en cas d'erreur de rendu SVG
+    }
+  }
+
+  document.body.style.background = bg;
+  document.body.style.backgroundSize = 'cover';
+  document.body.style.backgroundPosition = 'center';
+  document.body.style.backgroundRepeat = 'no-repeat';
+  document.body.style.backgroundAttachment = 'fixed';
+  
+  document.documentElement.classList.toggle('light',lightIds.includes(t.id));
+  document.querySelectorAll('.tsw').forEach(e=>e.classList.toggle('sel',e.dataset.id===t.id));
+  const m=document.querySelector('meta[name=theme-color]');if(m)m.content='#000000';
+}
+
+function renderThemeGrid(){
+  $('theme-grid').innerHTML=THEMES.map(t=>{
+    const custom = lsGet('cp_bg_' + t.id);
+    const thumbBg = custom ? `url("${custom}")` : (()=>{try{return SCENES[t.id]()}catch(e){return '#070B14'}})();
+    return `<div class="tsw" data-id="${t.id}" onclick="applyTheme('${t.id}')" style="background:${thumbBg.replace(/"/g,'&quot;')};background-size:cover;background-position:center"><span>${esc(t.name)}</span></div>`;
+  }).join('');
+  applyTheme(lsGet('cp_theme')||'godzilla');
+}
+
+/* =========================================================
+   MÉTÉO DYNAMIQUE
+========================================================= */
+async function fetchWeather(){
+  try {
+    if(navigator.geolocation){
+      navigator.geolocation.getCurrentPosition(async pos => {
+        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&current_weather=true`);
+        const data = await res.json();
+        if(data && data.current_weather) updateWeatherUI(Math.round(data.current_weather.temperature), data.current_weather.weathercode);
+      }, () => { fetchDefaultWeather(); });
+    } else { fetchDefaultWeather(); }
+  } catch(e) { fetchDefaultWeather(); }
+}
+async function fetchDefaultWeather(){
+  try {
+    const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=48.8566&longitude=2.3522&current_weather=true`);
+    const data = await res.json();
+    if(data && data.current_weather) updateWeatherUI(Math.round(data.current_weather.temperature), data.current_weather.weathercode);
+  } catch(e) { $('w-temp').textContent='--°C';$('w-desc').textContent='Indisponible'; }
+}
+function updateWeatherUI(temp, code){
+  $('w-temp').textContent = temp + '°C';
+  let desc = 'Clair', iconClass = 'fa-solid fa-sun';
+  if(code>=1 && code<=3){ desc = 'Nuageux'; iconClass = 'fa-solid fa-cloud-sun'; }
+  else if(code>=51 && code<=67){ desc = 'Pluie'; iconClass = 'fa-solid fa-cloud-rain'; }
+  else if(code>=71 && code<=77){ desc = 'Neige'; iconClass = 'fa-solid fa-snowflake'; }
+  else if(code>=95){ desc = 'Orage'; iconClass = 'fa-solid fa-bolt'; }
+  else if(code>=45 && code<=48){ desc = 'Brumeux'; iconClass = 'fa-solid fa-smog'; }
+  $('w-desc').textContent = desc;
+  $('w-weather-icon').className = iconClass;
+}
+
+/* =========================================================
+   RÉGLAGES, HORLOGE, PLEIN ÉCRAN
+========================================================= */
+function setCar(v){lsSet('cp_car',v);$('car-name').textContent=v||'CARPLAY'}
+function setDim(v){$('dim').style.opacity=v/100;lsSet('cp_dim',v)}
+let wakeLock=null;
+async function toggleWake(){
+  if(!('wakeLock' in navigator))return;
+  try{
+    if(wakeLock){await wakeLock.release();wakeLock=null;lsSet('cp_wake','0')}
+    else{wakeLock=await navigator.wakeLock.request('screen');wakeLock.addEventListener('release',()=>{wakeLock=null;updWake()});lsSet('cp_wake','1')}
+  }catch(e){}
+  updWake();
+}
+function updWake(){const b=$('wake-btn');b.textContent=wakeLock?'ACTIVÉ':'DÉSACTIVÉ';b.classList.toggle('pri',!!wakeLock)}
+function toggleFs(){const d=document,e=d.documentElement;if(d.fullscreenElement||d.webkitFullscreenElement){(d.exitFullscreen||d.webkitExitFullscreen).call(d)}else{(e.requestFullscreen||e.webkitRequestFullscreen).call(e)}}
+
+function tick(){
+  const n=new Date(),h=String(n.getHours()).padStart(2,'0'),m=String(n.getMinutes()).padStart(2,'0');
+  $('w-time').textContent=h+':'+m;
+  $('w-date').textContent=n.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+}
+
+window.addEventListener('load',()=>{
+  $('c-icon').innerHTML=ICONS.map(i=>`<option value="${i[1]}">${i[0]}</option>`).join('');
+  const car=lsGet('cp_car');if(car!==null)$('car-name').textContent=car||'CARPLAY';
+  const dim=lsGet('cp_dim');if(dim){$('dim-range').value=dim;$('dim').style.opacity=dim/100}
+  renderApps();renderThemeGrid();updWake();
+  if(!(document.documentElement.requestFullscreen||document.documentElement.webkitRequestFullscreen))$('fs-btn').style.display='none';
+  tick();setInterval(tick,5000);
+  fetchWeather();setInterval(fetchWeather,600000);
+  
+  if(navigator.getBattery)navigator.getBattery().then(b=>{
+    $('bat').style.display='flex';
+    const u=()=>{const l=Math.round(b.level*100);$('bat-lvl').textContent=l+'%';$('bat-ico').className='fa-solid fa-battery-'+(b.charging?'bolt':l>85?'full':l>60?'three-quarters':l>35?'half':l>10?'quarter':'empty');if(b.charging)$('bat-ico').className='fa-solid fa-bolt'};
+    u();b.addEventListener('levelchange',u);b.addEventListener('chargingchange',u);
+  });
+});
+</script>
+</body>
+</html>
