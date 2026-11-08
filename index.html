@@ -66,16 +66,17 @@ body.edit .app{animation:wig 0.22s ease-in-out infinite alternate}
 .sec{margin-bottom:18px}
 .sec>label{display:block;font-size:11px;letter-spacing:.16em;color:var(--sub);margin-bottom:6px;text-transform:uppercase;font-weight:700}
 .fld{width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--border);background:rgba(0,0,0,.2);color:var(--text);font-size:14px;outline:none;margin-bottom:8px}
-.row{display:flex;gap:8px;align-items:center}
 #theme-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
 .tsw{height:76px;border-radius:14px;border:2px solid transparent;background-size:cover;background-position:center;position:relative;overflow:hidden;cursor:pointer}
 .tsw span{position:absolute;left:0;right:0;bottom:0;padding:6px;font-size:10px;font-weight:800;background:linear-gradient(transparent,rgba(0,0,0,.85));color:#fff;text-align:left}
 .tsw.sel{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
-#preset-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:12px 6px;max-height:28vh;overflow-y:auto;padding:4px}
-.pre{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer}
-.pre .ico{width:50px;height:50px;border-radius:14px;display:grid;place-items:center;font-size:22px;color:#fff;background:var(--c);background-image:linear-gradient(160deg,rgba(255,255,255,.3),rgba(0,0,0,.2))}
-.pre .nm{font-size:10px;font-weight:700;text-align:center}
-.pre.have{opacity:.35}
+#preset-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:14px 8px;max-height:34vh;overflow-y:auto;padding:6px 2px}
+.pre{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;padding:8px;border-radius:16px;transition:background 0.2s;position:relative}
+.pre:hover{background:rgba(255,255,255,.05)}
+.pre .ico{width:54px;height:54px;border-radius:16px;display:grid;place-items:center;font-size:24px;color:#fff;background:var(--c);background-image:linear-gradient(160deg,rgba(255,255,255,.3),rgba(0,0,0,.2));box-shadow:0 4px 12px rgba(0,0,0,.3)}
+.pre .nm{font-size:11px;font-weight:700;text-align:center}
+.pre.have{opacity:.4;filter:grayscale(0.4)}
+.pre.have::after{content:'✓';position:absolute;top:6px;right:10px;font-size:12px;background:var(--accent);color:#000;width:18px;height:18px;border-radius:50%;display:grid;place-items:center;font-weight:800}
 #dim{position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;z-index:200}
 @media (max-width:850px){#widgets{display:none}}
 </style>
@@ -127,20 +128,9 @@ body.edit .app{animation:wig 0.22s ease-in-out infinite alternate}
     </div>
 
     <div class="sec">
-      <label>Ajouter une application</label>
+      <label>Bibliothèque d'applications (Clique pour ajouter/retirer)</label>
       <input id="preset-search" class="fld" type="search" placeholder="Rechercher : Spotify, Waze, Netflix…" oninput="renderPresets()">
       <div id="preset-list"></div>
-    </div>
-
-    <div class="sec">
-      <label>Ajouter via un lien personnalisé (URL Scheme)</label>
-      <input id="c-name" class="fld" type="text" placeholder="Nom de l'application">
-      <input id="c-url" class="fld" type="text" autocapitalize="off" autocorrect="off" placeholder="Lien (ex. monapp://)">
-      <div class="row">
-        <select id="c-icon" class="fld" style="flex:1"></select>
-        <input id="c-color" type="color" value="#3b82f6" style="width:56px;height:42px;border:none;background:none;margin-bottom:8px">
-      </div>
-      <button class="chip" style="width:100%;border-radius:12px;background:var(--accent);color:#000;font-weight:700;height:42px" onclick="addCustom()">AJOUTER L'APPLICATION</button>
     </div>
 
     <div class="sec">
@@ -178,9 +168,9 @@ const trees=(seed,base,minh,maxh,fill)=>{const r=rng(seed);let o='';for(let x=-3
 const blob=(cx,cy,rad,ph)=>{let d='';for(let i=0;i<=90;i++){const a=i/90*Math.PI*2,k=rad*(1+.16*Math.sin(a*3+ph)+.09*Math.sin(a*5+ph*2)+.05*Math.sin(a*8+ph*3));d+=(i?'L':'M')+(cx+Math.cos(a)*k*1.5).toFixed(1)+' '+(cy+Math.sin(a)*k*.8).toFixed(1)}return d+'Z'};
 
 /* =========================================================
-   THÈMES (Image Godzilla intégrée par défaut)[cite: 3]
+   THÈMES (Image Godzilla intégrée par défaut)
 ========================================================= */
-const defaultGodzillaImg = "url([cite: 3]data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=)";
+const defaultGodzillaImg = "url(data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=)";
 
 const SCENES={
  godzilla:()=>defaultGodzillaImg,
@@ -245,34 +235,51 @@ const lsGet=(k)=>{try{return localStorage.getItem(k)}catch(e){return null}};
 const lsSet=(k,v)=>{try{localStorage.setItem(k,v); return true;}catch(e){return false;}};
 
 /* =========================================================
-   CATALOGUE D'APPS & SCHEMES UNIFIÉS
+   CATALOGUE COMPLET DES APPLICATIONS (Logos et URL Schemes)
 ========================================================= */
 const B='fa-brands fa-',S='fa-solid fa-';
 const PRESETS=[
- ['Spotify','spotify://',B+'spotify','#1db954'],['YouTube','youtube://',B+'youtube','#ff0000'],
- ['YouTube Music','youtubemusic://',S+'circle-play','#e11d2e'],['Deezer','deezer://',S+'headphones','#a238ff'],
- ['Apple Musique','music://',S+'music','#fa2d48'],['Podcasts','podcasts://',S+'podcast','#9333ea'],
- ['Amazon Music','amznmp3://',B+'amazon','#1a98ff'],['SoundCloud','soundcloud://',B+'soundcloud','#ff5500'],
- ['Shazam','shazam://',S+'wave-square','#0a84ff'],['Twitch','twitch://',B+'twitch','#9146ff'],
- ['Netflix','nflx://',S+'film','#e50914'],['Disney+','disneyplus://',S+'wand-magic-sparkles','#113ccf'],
- ['Prime Video','aiv://',B+'amazon','#00a8e1'],['Canal+','mycanal://',S+'tv','#111111'],
- ['Waze','waze://',S+'location-dot','#33ccff'],['Google Maps','https://maps.google.com',S+'map','#34a853'],
- ['Plans','maps://',S+'map-location-dot','#30b0c7'],['Uber','uber://',B+'uber','#111111'],
- ['WhatsApp','whatsapp://',B+'whatsapp','#25d366'],['Messages','sms://',S+'comment-dots','#34c759'],
- ['Téléphone','tel://',S+'phone','#34c759'],['Contacts','contacts://',S+'address-book','#8e8e93'],
- ['Telegram','tg://',B+'telegram','#2aabee'],['Messenger','fb-messenger://',B+'facebook-messenger','#0084ff'],
- ['Instagram','instagram://',B+'instagram','#e1306c'],['TikTok','snssdk1233://',B+'tiktok','#111111'],
- ['Snapchat','snapchat://',S+'snapchat','#fffc00'],['Facebook','fb://',B+'facebook','#1877f2'],
- ['X','twitter://',B+'x-twitter','#111111'],['Discord','discord://',B+'discord','#5865f2'],
- ['Mail','mailto:',S+'envelope','#0a84ff'],['Calendrier','calshow://',S+'calendar-days','#ff3b30'],
- ['Notes','mobilenotes://',S+'note-sticky','#ffcc00'],['Photos','photos-redirect://',S+'images','#ff9f0a'],
- ['Fichiers','shareddocuments://',S+'folder-open','#0a84ff'],['Raccourcis','shortcuts://',S+'bolt','#8e44ef'],
- ['Chrome','googlechrome://',B+'chrome','#4285f4'],['Safari','https://www.google.com',S+'compass','#0a84ff'],
- ['App Store','itms-apps://',B+'app-store-ios','#0a84ff'],['Réglages','App-Prefs://',S+'gear','#8e8e93']
+ ['Spotify','spotify://',B+'spotify','#1db954'],
+ ['YouTube','youtube://',B+'youtube','#ff0000'],
+ ['YouTube Music','youtubemusic://',S+'circle-play','#e11d2e'],
+ ['Deezer','deezer://',S+'headphones','#a238ff'],
+ ['Apple Musique','music://',S+'music','#fa2d48'],
+ ['Podcasts','podcasts://',S+'podcast','#9333ea'],
+ ['Amazon Music','amznmp3://',B+'amazon','#1a98ff'],
+ ['SoundCloud','soundcloud://',B+'soundcloud','#ff5500'],
+ ['Shazam','shazam://',S+'wave-square','#0a84ff'],
+ ['Twitch','twitch://',B+'twitch','#9146ff'],
+ ['Netflix','nflx://',S+'film','#e50914'],
+ ['Disney+','disneyplus://',S+'wand-magic-sparkles','#113ccf'],
+ ['Prime Video','aiv://',B+'amazon','#00a8e1'],
+ ['Canal+','mycanal://',S+'tv','#111111'],
+ ['Waze','waze://',S+'location-dot','#33ccff'],
+ ['Google Maps','https://maps.google.com',S+'map','#34a853'],
+ ['Plans','maps://',S+'map-location-dot','#30b0c7'],
+ ['Uber','uber://',B+'uber','#111111'],
+ ['WhatsApp','whatsapp://',B+'whatsapp','#25d366'],
+ ['Messages','sms://',S+'comment-dots','#34c759'],
+ ['Téléphone','tel://',S+'phone','#34c759'],
+ ['Contacts','contacts://',S+'address-book','#8e8e93'],
+ ['Telegram','tg://',B+'telegram','#2aabee'],
+ ['Messenger','fb-messenger://',B+'facebook-messenger','#0084ff'],
+ ['Instagram','instagram://',B+'instagram','#e1306c'],
+ ['TikTok','snssdk1233://',B+'tiktok','#111111'],
+ ['Snapchat','snapchat://',S+'snapchat','#fffc00'],
+ ['Facebook','fb://',B+'facebook','#1877f2'],
+ ['X','twitter://',B+'x-twitter','#111111'],
+ ['Discord','discord://',B+'discord','#5865f2'],
+ ['Mail','mailto:',S+'envelope','#0a84ff'],
+ ['Calendrier','calshow://',S+'calendar-days','#ff3b30'],
+ ['Notes','mobilenotes://',S+'note-sticky','#ffcc00'],
+ ['Photos','photos-redirect://',S+'images','#ff9f0a'],
+ ['Fichiers','shareddocuments://',S+'folder-open','#0a84ff'],
+ ['Raccourcis','shortcuts://',S+'bolt','#8e44ef'],
+ ['Chrome','googlechrome://',B+'chrome','#4285f4'],
+ ['Safari','https://www.google.com',S+'compass','#0a84ff'],
+ ['App Store','itms-apps://',B+'app-store-ios','#0a84ff'],
+ ['Réglages','App-Prefs://',S+'gear','#8e8e93']
 ];
-const ICONS=[['Lettre (automatique)',''],['Musique',S+'music'],['Casque',S+'headphones'],['Vidéo',S+'play'],['Téléphone',S+'phone'],
- ['Message',S+'comment'],['Carte',S+'map'],['Appareil photo',S+'camera'],['Manette',S+'gamepad'],['Panier',S+'cart-shopping'],
- ['Voiture',S+'car'],['Carburant',S+'gas-pump'],['Globe',S+'globe'],['Étoile',S+'star'],['Cœur',S+'heart']];
 
 const DEFAULTS=['Spotify','YouTube','Deezer','Netflix','WhatsApp','Messages','Contacts','Photos','Réglages'];
 const defaultApps=()=>DEFAULTS.map((n)=>{const p=PRESETS.find(x=>x[0]===n);return{name:p[0],url:p[1],icon:p[2],color:p[3]}});
@@ -303,7 +310,7 @@ function removeApp(i){const a=getApps();a.splice(i,1);saveApps(a);renderPresets(
 function resetApps(){if(confirm('Rétablir les applications par défaut ?')){saveApps(defaultApps());renderPresets();closeModals()}}
 function toggleEdit(){const on=document.body.classList.toggle('edit');$('edit-btn').classList.toggle('on',on)}
 
-/* ---- Paramètres et Ajout ---- */
+/* ---- Paramètres et Sélection des Apps ---- */
 function openSettings(){
   $('set-modal').classList.add('open');
   if(!$('theme-grid').children.length)renderThemeGrid();
@@ -313,27 +320,38 @@ function openSettings(){
   renderPresets();
 }
 function renderPresets(){
-  const q=($('preset-search').value||'').toLowerCase().trim(),have=new Set(getApps().map(a=>a.name));
-  $('preset-list').innerHTML=PRESETS.map((p,i)=>({p,i})).filter(({p})=>!q||p[0].toLowerCase().includes(q)).map(({p,i})=>
-    `<div class="pre ${have.has(p[0])?'have':''}" onclick="addPreset(${i})"><div class="ico" style="--c:${p[3]};${darkText(p[3])?'color:#111':''}"><i class="${p[2]}"></i></div><div class="nm">${esc(p[0])}</div></div>`).join('');
+  const q=($('preset-search').value||'').toLowerCase().trim();
+  const installedNames=new Set(getApps().map(a=>a.name));
+  
+  $('preset-list').innerHTML=PRESETS.map((p,i)=>{
+    const isInstalled = installedNames.has(p[0]);
+    return `<div class="pre ${isInstalled?'have':''}" onclick="togglePreset(${i})">
+      <div class="ico" style="--c:${p[3]};${darkText(p[3])?'color:#111':''}"><i class="${p[2]}"></i></div>
+      <div class="nm">${esc(p[0])}</div>
+    </div>`;
+  }).filter(({},i)=>{
+    if(!q) return true;
+    return PRESETS[i][0].toLowerCase().includes(q);
+  }).map(el=>el).join('');
 }
-function addPreset(i){
-  const p=PRESETS[i],a=getApps();
-  if(a.some(x=>x.name===p[0]))return;
-  a.push({name:p[0],url:p[1],icon:p[2],color:p[3]});
-  saveApps(a);renderPresets();
+
+function togglePreset(i){
+  const p=PRESETS[i];
+  let a=getApps();
+  const idx=a.findIndex(x=>x.name===p[0]);
+  if(idx>=0){
+    a.splice(idx,1);
+  } else {
+    a.push({name:p[0],url:p[1],icon:p[2],color:p[3]});
+  }
+  saveApps(a);
+  renderPresets();
 }
-function addCustom(){
-  const name=$('c-name').value.trim(),url=$('c-url').value.trim();
-  if(!name||!url){alert("Renseignez le nom et le lien.");return}
-  const a=getApps();
-  a.push({name,url,icon:$('c-icon').value,color:$('c-color').value});
-  saveApps(a);$('c-name').value='';$('c-url').value='';renderPresets();
-}
+
 function closeModals(){document.querySelectorAll('.modal').forEach(m=>m.classList.remove('open'))}
 
 /* =========================================================
-   FOND D'ÉCRAN PERSO AVEC COMPRESSION AUTOMATIQUE (Anti-Plantage iPad)
+   FOND D'ÉCRAN PERSO AVEC COMPRESSION AUTOMATIQUE
 ========================================================= */
 function loadCustomBg(event){
   const file = event.target.files[0];
@@ -343,32 +361,20 @@ function loadCustomBg(event){
   reader.onload = function(e){
     const img = new Image();
     img.onload = function(){
-      // Redimensionnement intelligent pour éviter de saturer le localStorage de l'iPad/Safari
       const canvas = document.createElement('canvas');
-      let width = img.width;
-      let height = img.height;
+      let width = img.width, height = img.height;
       const maxDim = 1920;
-      
-      if (width > height && width > maxDim) {
-        height *= maxDim / width;
-        width = maxDim;
-      } else if (height > maxDim) {
-        width *= maxDim / height;
-        height = maxDim;
-      }
-      
-      canvas.width = width;
-      canvas.height = height;
+      if (width > height && width > maxDim) { height *= maxDim / width; width = maxDim; }
+      else if (height > maxDim) { width *= maxDim / height; height = maxDim; }
+      canvas.width = width; canvas.height = height;
       const ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0, width, height);
       
-      // Conversion compressée en JPEG
       const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
       const currentTheme = lsGet('cp_theme') || 'godzilla';
       
-      const success = lsSet('cp_bg_' + currentTheme, dataUrl);
-      if(!success) {
-        alert("Attention : L'image est trop lourde pour la mémoire de l'appareil. Essayez une image un peu plus légère.");
+      if(!lsSet('cp_bg_' + currentTheme, dataUrl)){
+        alert("Attention : Image trop lourde pour la mémoire de l'appareil.");
       }
       applyTheme(currentTheme);
     };
@@ -386,7 +392,7 @@ function clearCustomBg(){
 }
 
 /* =========================================================
-   THÈMES (Avec sécurité anti-fond blanc)
+   THÈMES
 ========================================================= */
 const lightIds=['sakura','ukiyo'];
 const lightStyle=document.createElement('style');lightStyle.textContent='html.light .app .nm{text-shadow:none}html.light .chip.on{color:#fff}';document.head.appendChild(lightStyle);
@@ -399,16 +405,9 @@ function applyTheme(id){
   lsSet('cp_theme',t.id);
 
   const customBg = lsGet('cp_bg_' + t.id);
-  let bg = '';
-  
-  if(customBg){
-    bg = `url("${customBg}")`;
-  } else {
-    try {
-      bg = SCENES[t.id]();
-    } catch(e) {
-      bg = '#070B14'; // Fallback sécurisé en cas d'erreur de rendu SVG
-    }
+  let bg = customBg ? `url("${customBg}")` : '';
+  if(!customBg){
+    try{bg=SCENES[t.id]()}catch(e){bg='#070B14'}
   }
 
   document.body.style.background = bg;
@@ -488,7 +487,6 @@ function tick(){
 }
 
 window.addEventListener('load',()=>{
-  $('c-icon').innerHTML=ICONS.map(i=>`<option value="${i[1]}">${i[0]}</option>`).join('');
   const car=lsGet('cp_car');if(car!==null)$('car-name').textContent=car||'CARPLAY';
   const dim=lsGet('cp_dim');if(dim){$('dim-range').value=dim;$('dim').style.opacity=dim/100}
   renderApps();renderThemeGrid();updWake();
